@@ -1,0 +1,66 @@
+---
+title: "p8105_hw2_kh3074"
+output: github_document
+time: 2021.09.30
+author: KaiYu He(kh3074)
+---
+
+
+---
+```{r}
+library(tidyverse)
+library(readxl)
+```
+
+## \textcolor{blue}{Problem1}  
+
+#### Read and clean the Mr. Trash Wheel sheet:  
+
+```{r}
+trash_weel_df = 
+  read_excel("data/Trash-Wheel-Collection-Totals-8-6-19.xlsx") %>%
+  janitor::clean_names()%>% #change to reasonable variable names
+  select(dumpster:homes_powered)%>% #omit the columns with notes
+  filter(dumpster != 'NA')%>% #omit rows that do not include dumpster-specific data
+  mutate(sports_balls = round(sports_balls))#round the number of sports balls to the nearest integer
+trash_weel_df
+summary(trash_weel_df)
+```
+
+#### precipitation data for 2018 and 2019
+
+```{r}
+precipitation_2018 = 
+  read_excel("data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",sheet = "2018 Precipitation",skip = 1)%>%
+  janitor::clean_names()%>%
+  mutate('year' = 2018)%>%
+  drop_na()
+
+  
+precipitation_2019 = 
+  read_excel("data/Trash-Wheel-Collection-Totals-8-6-19.xlsx",sheet = "2019 Precipitation", skip = 1)%>%
+  janitor::clean_names()%>%
+  mutate('year' = 2019)%>%
+  drop_na()
+  
+precipitation_2018_2019 = 
+  full_join(precipitation_2018,precipitation_2019)%>% 
+  mutate(month = month.name[month])
+precipitation_2018_2019
+summary(precipitation_2018_2019)
+```
+
+#### Conclusion
+- **Trash weel sheet**  
+  Form `r nrow(trash_weel_df)` rows and `r ncol(trash_weel_df)` columns of data,  
+  we can learn that Mr trash weel collect `r mean(pull(trash_weel_df,'cigarette_butts'))` cigarette butts per dumpster which is the most among all the trashes,  
+  collect `r mean(pull(trash_weel_df,'weight_tons'))` tons of trash per dumpster.   
+  And the median number of sports balls in a dumpster in 2017 is `r median(pull(filter(trash_weel_df,year == 2017),sports_balls))`
+  
+
+- **Precipitation sheet**  
+  From `r nrow(precipitation_2018_2019)` rows and `r ncol(precipitation_2018_2019)` columns of data,  
+  we can find out the mean precipitation per month is `r mean(pull(precipitation_2018_2019,'total'))`,  
+  total precipitation in 2018 is `r sum(pull(filter(precipitation_2018_2019,year == 2018),total))`.
+  
+  
