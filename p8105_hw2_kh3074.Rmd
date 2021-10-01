@@ -122,3 +122,72 @@ knitr::kable(tail(pols_snp_unemployment_df))#show some of the results
 - snp_df is a **`r nrow(snp_df)`** rows and **`r ncol(snp_df)`** columns data record the closing values of the S&P stock index on the associated date.
 - unemployment_df is a **`r nrow(unemp_df)`** rows and **`r ncol(unemp_df)`** columns data include numbers of percentage of unemployment on the associated date.
 - Combine all the data togather we can analyze the relationship between the proportion of government staffs and S&P stock index and unemployment.
+
+# Problem 3
+
+#### Load and tidy the data
+```{r}
+baby_name_data = 
+  read_csv("data/Popular_Baby_Names.csv")%>%
+  janitor::clean_names()%>%
+  mutate(gender = str_to_title(gender))%>%#First letter of gender capital
+  mutate(ethnicity = str_to_title(ethnicity))%>% #First letter of ethnicity capital
+  mutate(childs_first_name = str_to_title(childs_first_name))%>% #First letter of name capital
+  dplyr::distinct()
+```
+
+#### Female "Olivia"
+```{r}
+female_olivia = 
+  baby_name_data%>%
+  filter(childs_first_name == 'Olivia',gender == 'Female')%>%
+  select(year_of_birth,ethnicity,count,rank)%>%
+  arrange(year_of_birth)%>%
+  knitr::kable()
+```
+
+***female_olivia_reader_friendly_table***
+
+```{r}
+female_olivia
+```
+
+
+#### Most popular name among male children
+```{r}
+max_count_of_male_name =  #First find our which name is the most popular male name
+  baby_name_data%>%
+  filter(gender == 'Male')%>%
+  select(childs_first_name,count)%>%
+  group_by(childs_first_name)%>%
+  summarise_all(funs(sum))%>%  # sum all the counts with same name
+  filter(count == max(count))%>% #Find the most used name
+  knitr::kable()
+max_count_of_male_name
+```
+- Now we know **Ethan** is the most used name in male
+```{r}
+male_ethan = 
+  baby_name_data%>%
+  filter(childs_first_name == 'Ethan',gender == 'Male')%>%
+  select(year_of_birth,ethnicity,count,rank)%>%
+  arrange(year_of_birth)%>%
+  knitr::kable()
+```
+
+***male_ethan_reader_friendly_table***
+```{r}
+male_ethan
+```
+
+#### Male white non-hispanic children born in 2016
+```{r}
+non_hispanic_df =
+  baby_name_data%>%
+  filter(ethnicity == 'White Non Hispanic',year_of_birth == 2016,gender == 'Male')
+
+ggplot(non_hispanic_df,aes(x = rank, y = count)) + geom_point()
+ggsave('Male white non-hispanic children born in 2016.png')
+
+```
+
