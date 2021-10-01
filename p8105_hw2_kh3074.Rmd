@@ -12,7 +12,9 @@ library(tidyverse)
 library(readxl)
 ```
 
-## \textcolor{blue}{Problem1}  
+---
+
+# Problem1
 
 #### Read and clean the Mr. Trash Wheel sheet:  
 
@@ -25,6 +27,7 @@ trash_weel_df =
   mutate(sports_balls = round(sports_balls))#round the number of sports balls to the nearest integer
 trash_weel_df
 summary(trash_weel_df)
+
 ```
 
 #### precipitation data for 2018 and 2019
@@ -52,15 +55,70 @@ summary(precipitation_2018_2019)
 
 #### Conclusion
 - **Trash weel sheet**  
-  Form `r nrow(trash_weel_df)` rows and `r ncol(trash_weel_df)` columns of data,  
-  we can learn that Mr trash weel collect `r mean(pull(trash_weel_df,'cigarette_butts'))` cigarette butts per dumpster which is the most among all the trashes,  
-  collect `r mean(pull(trash_weel_df,'weight_tons'))` tons of trash per dumpster.   
-  And the median number of sports balls in a dumpster in 2017 is `r median(pull(filter(trash_weel_df,year == 2017),sports_balls))`
+  Form **`r nrow(trash_weel_df)`** rows and **`r ncol(trash_weel_df)`** columns of data,  
+  we can learn that Mr trash weel collect **`r mean(pull(trash_weel_df,'cigarette_butts'))`** cigarette butts per dumpster which is the most among all the trashes,  
+  collect **`r mean(pull(trash_weel_df,'weight_tons'))`** tons of trash per dumpster.   
+  And the median number of sports balls in a dumpster in 2017 is **`r median(pull(filter(trash_weel_df,year == 2017),sports_balls))`**
   
 
 - **Precipitation sheet**  
-  From `r nrow(precipitation_2018_2019)` rows and `r ncol(precipitation_2018_2019)` columns of data,  
-  we can find out the mean precipitation per month is `r mean(pull(precipitation_2018_2019,'total'))`,  
-  total precipitation in 2018 is `r sum(pull(filter(precipitation_2018_2019,year == 2018),total))`.
+  From **`r nrow(precipitation_2018_2019)`** rows and **`r ncol(precipitation_2018_2019)`** columns of data,  
+  we can find out the mean precipitation per month is **`r mean(pull(precipitation_2018_2019,'total'))`**,  
+  total precipitation in 2018 is **`r sum(pull(filter(precipitation_2018_2019,year == 2018),total))`**.
   
-  
+# Problem 2
+
+#### Clean DataSet of pols-month.csv
+```{r}
+pols_month =
+  read_csv("data/fivethirtyeight_datasets/pols-month.csv")%>%
+  separate(mon, into = c("year", "month", "day"), sep="-") %>%
+  mutate(month = as.double(month))%>%  #change the variable type to double
+  mutate(month = month.name[month])
+pols_month
+
+pols_month_tidy = 
+  pols_month%>%
+  mutate(president = prez_dem+prez_gop)%>%
+  select(-'day',-'prez_gop',-'prez_dem')
+pols_month_tidy
+```
+#### Clean data snp.csv
+```{r}
+snp_df = 
+  read.csv("data/fivethirtyeight_datasets/snp.csv")%>%
+  separate(date,into = c('month','day','year'),sep ='/')%>%
+  relocate(year)%>%
+  select(-day)%>%
+  mutate(month = as.numeric(month))%>% #Change the month name format 
+  mutate(month = month.name[month])
+
+unemp_df = 
+  read.csv("data/fivethirtyeight_datasets/unemployment.csv")%>%
+  pivot_longer(
+    Jan:Dec,
+    names_to = 'month',
+    values_to = 'unemployment'
+  )%>%
+  mutate(month = match(month,month.abb))%>% #Change the month name format 
+  mutate(month = month.name[month])%>%
+  mutate(Year = as.character(Year))%>%  #make sure the datatype are the same
+  janitor::clean_names()
+
+#Join the datasets by merging snp into pols
+pols_snp_df = left_join(pols_month_tidy,snp_df,by = c('year','month'))
+pols_snp_df
+knitr::kable(tail(pols_snp_df)) # show some of the results
+
+
+#Merging unemployment into the result.
+pols_snp_unemployment_df = left_join(pols_snp_df,unemp_df,by = c('year','month'))
+pols_snp_unemployment_df
+knitr::kable(tail(pols_snp_unemployment_df))#show some of the results
+```
+
+#### Data interpretation 
+- pols_month_df is a **`r nrow(pols_month_tidy)`** rows and **`r ncol(pols_month_tidy)`** columns data which include numbers of government staffs grouped by gov sen and rep.
+- snp_df is a **`r nrow(snp_df)`** rows and **`r ncol(snp_df)`** columns data record the closing values of the S&P stock index on the associated date.
+- unemployment_df is a **`r nrow(unemp_df)`** rows and **`r ncol(unemp_df)`** columns data include numbers of percentage of unemployment on the associated date.
+- Combine all the data togather we can analyze the relationship between the proportion of government staffs and S&P stock index and unemployment.
