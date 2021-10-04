@@ -79,7 +79,7 @@ pols_month
 
 pols_month_tidy = 
   pols_month%>%
-  mutate(president = prez_dem+prez_gop)%>%
+  mutate(president = ifelse(prez_gop == 1,'Gop','Dem'))%>%
   select(-'day',-'prez_gop',-'prez_dem')
 pols_month_tidy
 ```
