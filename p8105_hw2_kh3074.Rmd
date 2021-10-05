@@ -86,7 +86,7 @@ pols_month_tidy
 #### Clean data snp.csv
 ```{r}
 snp_df = 
-  read.csv("data/fivethirtyeight_datasets/snp.csv")%>%
+  read_csv("data/fivethirtyeight_datasets/snp.csv")%>%
   separate(date,into = c('month','day','year'),sep ='/')%>%
   relocate(year)%>%
   select(-day)%>%
@@ -94,7 +94,7 @@ snp_df =
   mutate(month = month.name[month])
 
 unemp_df = 
-  read.csv("data/fivethirtyeight_datasets/unemployment.csv")%>%
+  read_csv("data/fivethirtyeight_datasets/unemployment.csv")%>%
   pivot_longer(
     Jan:Dec,
     names_to = 'month',
