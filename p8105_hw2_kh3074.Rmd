@@ -23,7 +23,7 @@ trash_weel_df =
   read_excel("data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx") %>%
   janitor::clean_names()%>% #change to reasonable variable names
   select(dumpster:homes_powered)%>% #omit the columns with notes
-  filter(dumpster != 'NA')%>% #omit rows that do not include dumpster-specific data
+  filter(dumpster != 'NA',year != 'NA' )%>% #omit rows that do not include dumpster-specific data
   mutate(sports_balls = round(sports_balls))#round the number of sports balls to the nearest integer
 trash_weel_df
 summary(trash_weel_df)
